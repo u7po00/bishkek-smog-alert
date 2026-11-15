@@ -14,7 +14,7 @@ Demo: [live forecast and replay page](https://u7po00.github.io/bishkek-smog-aler
 
 ## Why this project
 
-Each winter it gets harder to simply breathe, as air pollution keeps getting worse, and international rankings place my city among the most polluted in the world. Last winter, our region had an energy crisis: the old infrastructure could not keep up with growing demand. Traffic jams are everywhere, and global warming is melting the Tien-Shan glaciers. That is life in Bishkek today. As a citizen and a patriot of my country, it hurts my soul to see all of these issues. I cannot address all these issues at once, but solving at least one of them would be better than nothing. I chose smog, as this issue is well known to every person who lives in Bishkek.
+Each winter it gets harder to simply breathe, as air pollution keeps getting worse, and international rankings place my city among the most polluted in the world. Last winter, our region had an energy crisis: the old infrastructure could not keep up with growing demand. Traffic jams are everywhere, and global warming is melting the Tien-Shan glaciers. That is life in Bishkek today. As a citizen and a patriot of my country, it hurts my soul to see all of these issues. I cannot address all these issues at once, but solving at least one of them would be better than nothing. I chose smog, as this issue is well known to every person who lives in Bishkek. Even though a forecast does not clean the air, warning the evening before lets people protect themselves.
 
 ## What I added to the suggested project
 
