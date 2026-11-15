@@ -85,7 +85,7 @@ fetch("bishkek_air_alert.ipynb").then(function(r){if(!r.ok)throw 0;return r.json
  nb.cells.forEach(function(c){(c.outputs||[]).forEach(function(o){var t=o.text;if(!t)return;if(t.join)t=t.join("");var k=t.indexOf("DEMO_DATA=");if(k>=0)d=JSON.parse(t.slice(k+10).split("\n")[0])})});
  if(!d)throw 0;
  R=d.rows;BAD=d.bad;
- var best=0;for(var k=0;k<R.length;k++){ix[R[k][0]]=k;if(R[k][2]>R[best][2])best=k}
+ var best=0;for(var k=0;k<R.length;k++){ix[R[k][0]]=k;if(R[k][1]>=BAD)best=k}
  $("d").min=R[0][0];$("d").max=R[R.length-1][0];show(best);
 }).catch(function(){$("out").innerHTML='<div class="card">The forecast data is not available yet. It appears here once the executed notebook is in the repository.</div>'});
 </script>
