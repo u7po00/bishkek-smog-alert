@@ -8,6 +8,8 @@ A next-day PM2.5 forecast for Bishkek built on measured data, turned into a bad-
 
 Code: [`bishkek_air_alert.ipynb`](bishkek_air_alert.ipynb). Click the badge to open it in Google Colab, then choose Runtime → Run all. It downloads its own data, needs no GPU and finishes in a few minutes.
 
+Demo: [replay demo page](https://u7po00.github.io/bishkek-smog-alert/). Pick any past evening and see the warning the model would have sent and what the air turned out to be the next day.
+
 > This is a student prototype. It is not health advice.
 
 ## Why this project
@@ -24,6 +26,7 @@ The suggested project is a next-day air quality forecast. On top of that this pr
 4. **An honest range.** Every forecast comes with an 80% range, and the notebook checks how often the real value fell inside it.
 5. **2- and 3-day forecasts**, to show how accuracy changes with the horizon.
 6. **Warnings in Kyrgyz, Russian and English.**
+7. **A replay demo page** that shows, for any evening in the test period, the warning the model would have sent in three languages and what actually happened.
 
 ## Data
 
