@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bishkek Smog Alert: replay demo</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:20px;background:#f6f7f9;color:#1c2330;line-height:1.45}
+h1{font-size:1.5rem;margin:0 0 4px}
+.sub{color:#556;margin:0 0 16px}
+.card{background:#fff;border:1px solid #dde1e7;border-radius:10px;padding:14px 16px;margin:12px 0}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row .card{flex:1;min-width:150px;margin:0}
+.big{font-size:1.9rem;font-weight:700}
+.lab{font-size:.8rem;color:#667;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+button,input{font:inherit;padding:7px 10px;border:1px solid #c5cbd4;border-radius:8px;background:#fff;margin:3px 0}
+button{cursor:pointer}
+.alert{border-left:6px solid #c0392b}
+.ok{border-left:6px solid #2e8b57}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.9rem;font-weight:600;color:#fff}
+.msg p{margin:6px 0}
+svg{width:100%;height:170px}
+small{color:#667}
+</style>
+</head>
+<body>
+<h1>Bishkek Smog Alert: replay demo</h1>
+<p class="sub">Pick an evening between 2020 and 2024. The page shows the warning the model would have sent for the next day, and what the air turned out to be. Every forecast is for a day the model had never seen. This is a replay of past days, not a live forecast.</p>
+<div class="card"><label>Forecast made on the evening of <input type="date" id="d"></label> <button id="prev">&#9664; Day</button> <button id="next">Day &#9654;</button> <button id="smog">Random smoggy day</button></div>
+<div id="out"><div class="card">Loading forecasts from the notebook...</div></div>
+<p><small>Data: US Embassy Bishkek PM2.5 monitor (measured). The forecasts are read straight from the outputs of <a href="https://github.com/u7po00/bishkek-smog-alert">the project notebook</a>. Student prototype, not health advice.</small></p>
+<script>
+var R=[],BAD=55.5,ix={},cur=0;
+function $(i){return document.getElementById(i)}
+function day(s,n){var t=new Date(s+"T00:00:00Z");t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)}
+function msgs(p,lo,hi,a){
+ var r=lo+"–"+hi;
+ if(a)return[
+  ["KY","ЭСКЕРТҮҮ, Бишкек: эртең PM2.5 болжол менен "+p+" мкг/м³ болот (күтүлгөн аралык "+r+"). Аба ден соолукка зыяндуу. Сыртта азыраак жүрүңүз, спорт сабактарын имарат ичинде өткөрүңүз, терезелерди жабык кармаңыз."],
+  ["RU","ПРЕДУПРЕЖДЕНИЕ, Бишкек: завтра PM2.5 ожидается около "+p+" мкг/м³ (вероятный диапазон "+r+"). Воздух вреден для здоровья. Сократите время на улице, проводите занятия спортом в помещении, держите окна закрытыми."],
+  ["EN","ALERT, Bishkek: tomorrow's PM2.5 is forecast at about "+p+" µg/m³ (likely range "+r+"). The air may be unhealthy. Spend less time outdoors, move sport indoors and keep windows closed."]];
+ return[
+  ["KY","Бишкек: эртең кооптуу деңгээл күтүлбөйт. PM2.5 болжол менен "+p+" мкг/м³ (күтүлгөн аралык "+r+")."],
+  ["RU","Бишкек: завтра опасный уровень не ожидается. PM2.5 около "+p+" мкг/м³ (вероятный диапазон "+r+")."],
+  ["EN","Bishkek: no unhealthy level expected tomorrow. PM2.5 about "+p+" µg/m³ (likely range "+r+")."]];
+}
+function chart(i){
+ var a=Math.max(0,i-20),b=Math.min(R.length-1,i+20),W=700,H=170,m=BAD*1.3,k;
+ for(k=a;k<=b;k++)m=Math.max(m,R[k][1],R[k][2]);
+ function X(k){return 10+(k-a)/(b-a||1)*(W-20)}
+ function Y(v){return H-18-v/m*(H-30)}
+ function line(c){var s="";for(var k=a;k<=b;k++)s+=X(k).toFixed(1)+","+Y(R[k][c]).toFixed(1)+" ";return s}
+ return '<svg viewBox="0 0 '+W+' '+H+'">'+
+  '<line x1="10" x2="'+(W-10)+'" y1="'+Y(BAD)+'" y2="'+Y(BAD)+'" stroke="#c0392b" stroke-dasharray="5 4"/>'+
+  '<line x1="'+X(i)+'" x2="'+X(i)+'" y1="6" y2="'+(H-18)+'" stroke="#99a"/>'+
+  '<polyline fill="none" stroke="#1c2330" stroke-width="1.6" points="'+line(1)+'"/>'+
+  '<polyline fill="none" stroke="#2f6fde" stroke-width="1.6" points="'+line(2)+'"/>'+
+  '<text x="12" y="'+(Y(BAD)-4)+'" font-size="11" fill="#c0392b">unhealthy limit '+BAD+'</text>'+
+  '<text x="10" y="'+(H-3)+'" font-size="11" fill="#667">'+day(R[a][0],1)+'</text>'+
+  '<text x="'+(W-10)+'" y="'+(H-3)+'" font-size="11" fill="#667" text-anchor="end">'+day(R[b][0],1)+'</text></svg>'+
+  '<small><b style="color:#1c2330">black</b> = actual, <b style="color:#2f6fde">blue</b> = forecast, grey line = the day shown above</small>';
+}
+function show(i){
+ cur=i;var r=R[i],bad=r[1]>=BAD,a=r[5]==1,v,c;
+ if(a&&bad){v="Caught: the warning was right";c="#2e8b57"}
+ else if(a){v="False alarm: warned, but the day was fine";c="#d98200"}
+ else if(bad){v="Missed: no warning, but the day was unhealthy";c="#c0392b"}
+ else{v="Correct: no warning was needed";c="#2e8b57"}
+ var m=msgs(r[2],r[3],r[4],a),h="";
+ for(var k=0;k<3;k++)h+="<p><b>"+m[k][0]+"</b> "+m[k][1]+"</p>";
+ $("d").value=r[0];
+ $("out").innerHTML='<div class="row"><div class="card"><div class="lab">Forecast for '+day(r[0],1)+'</div><div class="big">'+r[2]+'</div><small>µg/m³, likely '+r[3]+'–'+r[4]+'</small></div>'+
+  '<div class="card"><div class="lab">What actually happened</div><div class="big">'+r[1]+'</div><small>µg/m³'+(bad?', unhealthy':'')+'</small></div></div>'+
+  '<div class="card"><span class="tag" style="background:'+c+'">'+v+'</span></div>'+
+  '<div class="card msg '+(a?'alert':'ok')+'"><div class="lab">The message people would get that evening</div>'+h+'</div>'+
+  '<div class="card"><div class="lab">Twenty days either side</div>'+chart(i)+'</div>';
+}
+function go(s){if(ix[s]!=null){show(ix[s]);return}for(var k=0;k<R.length;k++)if(R[k][0]>=s){show(k);return}show(R.length-1)}
+$("d").onchange=function(){go(this.value)};
+$("prev").onclick=function(){show(Math.max(0,cur-1))};
+$("next").onclick=function(){show(Math.min(R.length-1,cur+1))};
+$("smog").onclick=function(){var b=[];for(var k=0;k<R.length;k++)if(R[k][1]>=BAD)b.push(k);if(b.length)show(b[Math.floor(Math.random()*b.length)])};
+fetch("bishkek_air_alert.ipynb").then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(nb){
+ var d=null;
+ nb.cells.forEach(function(c){(c.outputs||[]).forEach(function(o){var t=o.text;if(!t)return;if(t.join)t=t.join("");var k=t.indexOf("DEMO_DATA=");if(k>=0)d=JSON.parse(t.slice(k+10).split("\n")[0])})});
+ if(!d)throw 0;
+ R=d.rows;BAD=d.bad;
+ var best=0;for(var k=0;k<R.length;k++){ix[R[k][0]]=k;if(R[k][2]>R[best][2])best=k}
+ $("d").min=R[0][0];$("d").max=R[R.length-1][0];show(best);
+}).catch(function(){$("out").innerHTML='<div class="card">The forecast data is not available yet. It appears here once the executed notebook is in the repository.</div>'});
+</script>
+</body>
+</html>
