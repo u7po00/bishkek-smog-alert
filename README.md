@@ -24,10 +24,10 @@ The suggested project is a next-day air quality forecast. On top of that this pr
 2. **A cost-aware alert.** The forecast becomes a warning. Missing a bad day counts 5 times worse than a false alarm, and the alert threshold is the one with the lowest total cost.
 3. **Missed-day analysis.** A table of the bad days the alert failed to catch and how they differ from the ones it caught.
 4. **An honest range.** Every forecast comes with an 80% range, and the notebook checks how often the real value fell inside it.
-5. **2- and 3-day forecasts**, to show how accuracy changes with the horizon.
+5. **Forecasts up to a week ahead**, to show how accuracy changes with the horizon.
 6. **Warnings in Kyrgyz, Russian and English.**
 7. **A replay demo page** that shows, for any evening in the test period, the warning the model would have sent in three languages and what actually happened.
-8. **A real forecast for tomorrow.** Section 12 of the notebook takes today's PM2.5 reading, typed in by hand because the Embassy feed ended in March 2025, downloads the live weather forecast and prints tomorrow's predicted level, its range and the warning. With a single reading it is less accurate than the tested results.
+8. **A real forecast for tomorrow.** Section 12 of the notebook takes today's PM2.5 reading, typed in by hand because the Embassy feed ended in March 2025, downloads the live weather forecast and prints tomorrow's predicted level, its range and the warning. It also prints an outlook for the next seven days. With a single reading these are less accurate than the tested results, and a month ahead cannot be forecast day by day because the weather cannot.
 
 ## Data
 
@@ -58,7 +58,7 @@ The suggested project is a next-day air quality forecast. On top of that this pr
 - **Air-trap experiment:** MAE improvement from air-trap features: +0.12 ug/m3 on all days (95% range -0.12 to +0.34); +0.24 on winter days (95% range -0.42 to +0.88). No clear difference: the range includes zero, so the gain could be chance.
 - **Top drivers:** pm_today, inversion_mean_target, pm_peak_today, season_cos, pm_change.
 - **Range:** the 80% range held the real value on 87% of test days.
-- **Horizon (naive / model MAE):** 1 day: 12.9 / 10.31, 2 day: 17.24 / 11.77, 3 day: 19.62 / 12.78.
+- **Horizon (naive / model MAE):** 1 day: 12.9 / 10.31, 2 day: 17.24 / 11.77, 3 day: 19.62 / 12.78, 4 day: 20.48 / 13.17, 5 day: 20.66 / 13.71, 6 day: 21.07 / 14.32, 7 day: 21.05 / 13.99.
 
 <!-- ILIM: 3-5 sentences in your own words. What do these numbers mean? Did the air-trap features help, and was that what you expected? What surprised you? -->
 
