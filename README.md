@@ -49,6 +49,7 @@ The suggested project is a next-day air quality forecast. On top of that this pr
 - **Tested on:** 2020-07-02 to 2024-06-29, 1306 days in 4 seasons, each forecast by a model trained only on earlier seasons. 165 bad days at 55.5 ug/m3 (Unhealthy (US AQI)).
 - **Accuracy (MAE, ug/m3):** naive 12.9 vs model 10.31 on all days; naive 29.0 vs model 22.59 on winter days.
 - **Without the target day's weather:** model 11.04 on all days and 24.63 on winter days. A real forecast would land between this and the line above.
+- **In percent:** PM2.5 averaged 31.5 ug/m3 on test days (62.8 in winter). The model's average error is 33% of that level (naive 41%). Half of the model's forecasts were within 23% of the real value (naive 25%), and 54% were within 25% of it (naive 50%).
 - **Alert (thresholds 41.6 to 44.4):** caught 143 of 165 bad days with 88 false alarms (critical success index 0.57). The naive rule caught 113 with 52 false alarms (critical success index 0.52).
 - **Air-trap experiment:** MAE improvement from air-trap features: +0.12 ug/m3 on all days (95% range -0.12 to +0.34); +0.24 on winter days (95% range -0.42 to +0.88). No clear difference: the range includes zero, so the gain could be chance.
 - **Top drivers:** pm_today, inversion_mean_target, pm_peak_today, season_cos, pm_change.
