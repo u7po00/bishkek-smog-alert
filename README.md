@@ -27,6 +27,7 @@ The suggested project is a next-day air quality forecast. On top of that this pr
 5. **2- and 3-day forecasts**, to show how accuracy changes with the horizon.
 6. **Warnings in Kyrgyz, Russian and English.**
 7. **A replay demo page** that shows, for any evening in the test period, the warning the model would have sent in three languages and what actually happened.
+8. **A real forecast for tomorrow.** Section 12 of the notebook takes today's PM2.5 reading, typed in by hand because the Embassy feed ended in March 2025, downloads the live weather forecast and prints tomorrow's predicted level, its range and the warning. With a single reading it is less accurate than the tested results.
 
 ## Data
 
