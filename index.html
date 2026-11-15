@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bishkek Smog Alert: replay demo</title>
+<title>Bishkek Smog Alert: live forecast and replay</title>
 <style>
 body{font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:20px;background:#f6f7f9;color:#1c2330;line-height:1.45}
 h1{font-size:1.5rem;margin:0 0 4px}
-.sub{color:#556;margin:0 0 16px}
+h2{font-size:1.15rem;margin:26px 0 4px}
+.sub{color:#556;margin:0 0 12px}
 .card{background:#fff;border:1px solid #dde1e7;border-radius:10px;padding:14px 16px;margin:12px 0}
 .row{display:flex;gap:12px;flex-wrap:wrap}
 .row .card{flex:1;min-width:150px;margin:0}
@@ -15,35 +16,50 @@ h1{font-size:1.5rem;margin:0 0 4px}
 .lab{font-size:.8rem;color:#667;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
 button,input{font:inherit;padding:7px 10px;border:1px solid #c5cbd4;border-radius:8px;background:#fff;margin:3px 0}
 button{cursor:pointer}
+input[type=number]{width:90px}
 .alert{border-left:6px solid #c0392b}
 .ok{border-left:6px solid #2e8b57}
 .tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.9rem;font-weight:600;color:#fff}
 .msg p{margin:6px 0}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #e6e9ee}
+th{font-size:.8rem;color:#667;text-transform:uppercase;letter-spacing:.04em}
 svg{width:100%;height:170px}
 small{color:#667}
 </style>
 </head>
 <body>
-<h1>Bishkek Smog Alert: replay demo</h1>
-<p class="sub">Pick an evening between 2020 and 2024. The page shows the warning the model would have sent for the next day, and what the air turned out to be. Every forecast is for a day the model had never seen. This is a replay of past days, not a live forecast.</p>
+<h1>Bishkek Smog Alert</h1>
+<p class="sub">A next-day and week-ahead PM2.5 forecast for Bishkek. Student prototype, not health advice.</p>
+
+<h2>Forecast for the week ahead (live)</h2>
+<p class="sub">Type today's average PM2.5 for Bishkek from any air-quality app (AQICN, AQ.kg, IQAir). The page downloads the current weather forecast and runs the trained model here in your browser, so the dates move forward every day.</p>
+<div class="card"><label>Today's PM2.5 in Bishkek, µg/m³ <input type="number" id="pm" min="1" max="999" value="60"></label> <button id="run" disabled>Forecast</button></div>
+<div id="live"><div class="card">Loading the model from the notebook...</div></div>
+<p><small>Why you have to type the reading: the US Embassy monitor that the model was trained on stopped reporting in 2025, so today's value cannot be downloaded automatically. With one reading, and a weather forecast in place of the real weather, expect larger errors than in the tests, especially 4 to 7 days ahead.</small></p>
+
+<h2>Replay of past days</h2>
+<p class="sub">Pick an evening between 2020 and 2024. The page shows the warning the model would have sent for the next day, and what the air turned out to be. Every forecast is for a day the model had never seen.</p>
 <div class="card"><label>Forecast made on the evening of <input type="date" id="d"></label> <button id="prev">&#9664; Day</button> <button id="next">Day &#9654;</button> <button id="smog">Random smoggy day</button></div>
 <div id="out"><div class="card">Loading forecasts from the notebook...</div></div>
-<p><small>Data: US Embassy Bishkek PM2.5 monitor (measured). The forecasts are read straight from the outputs of <a href="https://github.com/u7po00/bishkek-smog-alert">the project notebook</a>. Student prototype, not health advice.</small></p>
+<p><small>Data: US Embassy Bishkek PM2.5 monitor (measured) and Open-Meteo weather. The forecasts and the model are read straight from the outputs of <a href="https://github.com/u7po00/bishkek-smog-alert">the project notebook</a>.</small></p>
 <script>
-var R=[],BAD=55.5,ix={},cur=0;
+var R=[],BAD=55.5,ix={},cur=0,M=null;
 function $(i){return document.getElementById(i)}
 function day(s,n){var t=new Date(s+"T00:00:00Z");t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10)}
 function msgs(p,lo,hi,a){
- var r=lo+"–"+hi;
+ var ky="",ru="",en="";
+ if(lo!=null){ky=" (күтүлгөн аралык "+lo+"–"+hi+")";ru=" (вероятный диапазон "+lo+"–"+hi+")";en=" (likely range "+lo+"–"+hi+")"}
  if(a)return[
-  ["KY","ЭСКЕРТҮҮ, Бишкек: эртең PM2.5 болжол менен "+p+" мкг/м³ болот (күтүлгөн аралык "+r+"). Аба ден соолукка зыяндуу. Сыртта азыраак жүрүңүз, спорт сабактарын имарат ичинде өткөрүңүз, терезелерди жабык кармаңыз."],
-  ["RU","ПРЕДУПРЕЖДЕНИЕ, Бишкек: завтра PM2.5 ожидается около "+p+" мкг/м³ (вероятный диапазон "+r+"). Воздух вреден для здоровья. Сократите время на улице, проводите занятия спортом в помещении, держите окна закрытыми."],
-  ["EN","ALERT, Bishkek: tomorrow's PM2.5 is forecast at about "+p+" µg/m³ (likely range "+r+"). The air may be unhealthy. Spend less time outdoors, move sport indoors and keep windows closed."]];
+  ["KY","ЭСКЕРТҮҮ, Бишкек: эртең PM2.5 болжол менен "+p+" мкг/м³ болот"+ky+". Аба ден соолукка зыяндуу. Сыртта азыраак жүрүңүз, спорт сабактарын имарат ичинде өткөрүңүз, терезелерди жабык кармаңыз."],
+  ["RU","ПРЕДУПРЕЖДЕНИЕ, Бишкек: завтра PM2.5 ожидается около "+p+" мкг/м³"+ru+". Воздух вреден для здоровья. Сократите время на улице, проводите занятия спортом в помещении, держите окна закрытыми."],
+  ["EN","ALERT, Bishkek: tomorrow's PM2.5 is forecast at about "+p+" µg/m³"+en+". The air may be unhealthy. Spend less time outdoors, move sport indoors and keep windows closed."]];
  return[
-  ["KY","Бишкек: эртең кооптуу деңгээл күтүлбөйт. PM2.5 болжол менен "+p+" мкг/м³ (күтүлгөн аралык "+r+")."],
-  ["RU","Бишкек: завтра опасный уровень не ожидается. PM2.5 около "+p+" мкг/м³ (вероятный диапазон "+r+")."],
-  ["EN","Bishkek: no unhealthy level expected tomorrow. PM2.5 about "+p+" µg/m³ (likely range "+r+")."]];
+  ["KY","Бишкек: эртең кооптуу деңгээл күтүлбөйт. PM2.5 болжол менен "+p+" мкг/м³"+ky+"."],
+  ["RU","Бишкек: завтра опасный уровень не ожидается. PM2.5 около "+p+" мкг/м³"+ru+"."],
+  ["EN","Bishkek: no unhealthy level expected tomorrow. PM2.5 about "+p+" µg/m³"+en+"."]];
 }
+function msgHtml(m){var h="";for(var k=0;k<3;k++)h+="<p><b>"+m[k][0]+"</b> "+m[k][1]+"</p>";return h}
 function chart(i){
  var a=Math.max(0,i-20),b=Math.min(R.length-1,i+20),W=700,H=170,m=BAD*1.3,k;
  for(k=a;k<=b;k++)m=Math.max(m,R[k][1],R[k][2]);
@@ -66,13 +82,11 @@ function show(i){
  else if(a){v="False alarm: warned, but the day was fine";c="#d98200"}
  else if(bad){v="Missed: no warning, but the day was unhealthy";c="#c0392b"}
  else{v="Correct: no warning was needed";c="#2e8b57"}
- var m=msgs(r[2],r[3],r[4],a),h="";
- for(var k=0;k<3;k++)h+="<p><b>"+m[k][0]+"</b> "+m[k][1]+"</p>";
  $("d").value=r[0];
  $("out").innerHTML='<div class="row"><div class="card"><div class="lab">Forecast for '+day(r[0],1)+'</div><div class="big">'+r[2]+'</div><small>µg/m³, likely '+r[3]+'–'+r[4]+'</small></div>'+
   '<div class="card"><div class="lab">What actually happened</div><div class="big">'+r[1]+'</div><small>µg/m³'+(bad?', unhealthy':'')+'</small></div></div>'+
   '<div class="card"><span class="tag" style="background:'+c+'">'+v+'</span></div>'+
-  '<div class="card msg '+(a?'alert':'ok')+'"><div class="lab">The message people would get that evening</div>'+h+'</div>'+
+  '<div class="card msg '+(a?'alert':'ok')+'"><div class="lab">The message people would get that evening</div>'+msgHtml(msgs(r[2],r[3],r[4],a))+'</div>'+
   '<div class="card"><div class="lab">Twenty days either side</div>'+chart(i)+'</div>';
 }
 function go(s){if(ix[s]!=null){show(ix[s]);return}for(var k=0;k<R.length;k++)if(R[k][0]>=s){show(k);return}show(R.length-1)}
@@ -80,14 +94,77 @@ $("d").onchange=function(){go(this.value)};
 $("prev").onclick=function(){show(Math.max(0,cur-1))};
 $("next").onclick=function(){show(Math.min(R.length-1,cur+1))};
 $("smog").onclick=function(){var b=[];for(var k=0;k<R.length;k++)if(R[k][1]>=BAD)b.push(k);if(b.length)show(b[Math.floor(Math.random()*b.length)])};
+
+function unpack(s){var bin=atob(s),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+ return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream("gzip"))).text()}
+function runModel(m,x){var s=m.base;for(var i=0;i<m.trees.length;i++){var n=m.trees[i];while(typeof n!=="number"){var v=x[n[0]];n=(v!==v)?(n[2]?n[3]:n[4]):(v<=n[1]?n[3]:n[4])}s+=n}return s}
+function mean(a){if(!a)return NaN;var s=0,c=0;for(var i=0;i<a.length;i++)if(a[i]!=null&&a[i]===a[i]){s+=a[i];c++}return c?s/c:NaN}
+function least(a){if(!a)return NaN;var m=Infinity;for(var i=0;i<a.length;i++)if(a[i]!=null&&a[i]<m)m=a[i];return m===Infinity?NaN:m}
+function total(a){if(!a)return NaN;var s=0;for(var i=0;i<a.length;i++)if(a[i]!=null)s+=a[i];return s}
+function daily(h,date){
+ var idx=[],night=[],i;
+ for(i=0;i<h.time.length;i++)if(h.time[i].slice(0,10)===date){idx.push(i);if(+h.time[i].slice(11,13)<8)night.push(i)}
+ if(!idx.length)return null;
+ function col(v,ii){if(!h[v])return null;return ii.map(function(j){return h[v][j]})}
+ var d={},T=col("temperature_2m",idx);
+ d.temp=mean(T);d.temp_min=least(T);
+ d.wind=mean(col("wind_speed_10m",idx));d.wind_night=mean(col("wind_speed_10m",night));
+ d.humidity=mean(col("relative_humidity_2m",idx));d.precip=total(col("precipitation",idx));d.pressure=mean(col("surface_pressure",idx));
+ if(h.temperature_mountain){
+  var diff=function(j){var a=h.temperature_mountain[j],b=h.temperature_2m[j];return(a==null||b==null)?NaN:a-b};
+  var inv=idx.map(diff),dz=(M.elev_mountain-M.elev_city)/1000,c=0;
+  d.inversion_mean=mean(inv);d.inversion_night=mean(night.map(diff));
+  inv.forEach(function(v){if(v===v&&-v/dz<3)c++});d.inversion_hours=c;
+ }
+ if(h.boundary_layer_height){var B=col("boundary_layer_height",idx);d.blh_mean=mean(B);d.blh_min=least(B)}
+ if(h.cloud_cover){d.cloud=mean(col("cloud_cover",idx));d.cloud_night=mean(col("cloud_cover",night))}
+ if(h.snow_depth)d.snow_depth=mean(col("snow_depth",idx));
+ if(h.wind_direction_10m){var nn=[],ee=[];idx.forEach(function(j){var s=h.wind_speed_10m[j],r=h.wind_direction_10m[j];if(s!=null&&r!=null){r=r*Math.PI/180;nn.push(s*Math.cos(r));ee.push(s*Math.sin(r))}});d.wind_from_north=mean(nn);d.wind_from_east=mean(ee)}
+ d.heating=Math.max(0,18-d.temp);
+ return d;
+}
+function doy(s){var t=new Date(s+"T00:00:00Z");return Math.round((t-Date.UTC(t.getUTCFullYear(),0,1))/864e5)+1}
+function forecast(){
+ var pm=parseFloat($("pm").value);
+ if(!(pm>0)){$("live").innerHTML='<div class="card">Type a PM2.5 value above zero.</div>';return}
+ $("live").innerHTML='<div class="card">Downloading the weather forecast...</div>';
+ var tail="&past_days=1&forecast_days=9&timezone=Asia%2FBishkek",u="https://api.open-meteo.com/v1/forecast?latitude=";
+ var jobs=[fetch(u+M.lat+"&longitude="+M.lon+"&hourly="+M.wx_vars.join(",")+tail).then(function(r){return r.json()})];
+ if(M.has_mountain)jobs.push(fetch(u+M.lat_m+"&longitude="+M.lon_m+"&hourly=temperature_2m"+tail).then(function(r){return r.json()}));
+ Promise.all(jobs).then(function(a){
+  var h=a[0].hourly;if(a[1])h.temperature_mountain=a[1].hourly.temperature_2m;
+  var today=new Date().toLocaleDateString("en-CA",{timeZone:"Asia/Bishkek"}),t0=daily(h,today),rows="",first=null;
+  for(var k=1;k<=7;k++){
+   var target=day(today,k),tk=daily(h,target),x=[];
+   M.features.forEach(function(f){var v=NaN,c;
+    if(f==="pm_today")v=pm;
+    else if(f==="season_sin")v=Math.sin(2*Math.PI*doy(target)/365.25);
+    else if(f==="season_cos")v=Math.cos(2*Math.PI*doy(target)/365.25);
+    else if(f==="weekday")v=(new Date(target+"T00:00:00Z").getUTCDay()+6)%7;
+    else if(f.slice(-6)==="_today"){c=f.slice(0,-6);if(t0&&c in t0)v=t0[c]}
+    else if(f.slice(-7)==="_target"){c=f.slice(0,-7);if(tk&&c in tk)v=tk[c]}
+    x.push(v)});
+   var p=Math.exp(Math.log(1+pm)+runModel(M.models[k],x))-1,al=p>=M.threshold;
+   if(k===1)first=[Math.round(p),al];
+   rows+="<tr><td>"+new Date(target+"T00:00:00Z").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"})+"</td><td><b>"+Math.round(p)+"</b></td><td>± "+Math.round(M.mae[k])+"</td><td>"+(al?'<span class="tag" style="background:#c0392b">Alert</span>':'<span class="tag" style="background:#2e8b57">No alert</span>')+"</td></tr>";
+  }
+  $("live").innerHTML='<div class="card"><div class="lab">From a reading of '+pm+' µg/m³ on '+today+'</div><table><tr><th>Day</th><th>Forecast, µg/m³</th><th>Typical error in tests</th><th>Warning</th></tr>'+rows+'</table><small>An alert fires when the forecast reaches '+M.threshold+' µg/m³. Unhealthy starts at '+M.bad+'.</small></div>'+
+   '<div class="card msg '+(first[1]?'alert':'ok')+'"><div class="lab">The message for tomorrow</div>'+msgHtml(msgs(first[0],null,null,first[1]))+'</div>';
+ }).catch(function(){$("live").innerHTML='<div class="card">The weather forecast could not be downloaded. Check the connection and try again.</div>'});
+}
+$("run").onclick=forecast;
+
 fetch("bishkek_air_alert.ipynb").then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(nb){
- var d=null;
- nb.cells.forEach(function(c){(c.outputs||[]).forEach(function(o){var t=o.text;if(!t)return;if(t.join)t=t.join("");var k=t.indexOf("DEMO_DATA=");if(k>=0)d=JSON.parse(t.slice(k+10).split("\n")[0])})});
- if(!d)throw 0;
- R=d.rows;BAD=d.bad;
- var best=0;for(var k=0;k<R.length;k++){ix[R[k][0]]=k;if(R[k][1]>=BAD)best=k}
- $("d").min=R[0][0];$("d").max=R[R.length-1][0];show(best);
-}).catch(function(){$("out").innerHTML='<div class="card">The forecast data is not available yet. It appears here once the executed notebook is in the repository.</div>'});
+ var d=null,lm=null;
+ nb.cells.forEach(function(c){(c.outputs||[]).forEach(function(o){var t=o.text;if(!t)return;if(t.join)t=t.join("");
+  var k=t.indexOf("DEMO_DATA=");if(k>=0)d=JSON.parse(t.slice(k+10).split("\n")[0]);
+  k=t.indexOf("LIVE_MODEL=");if(k>=0)lm=t.slice(k+11).split("\n")[0].trim()})});
+ if(d){R=d.rows;BAD=d.bad;var best=0;for(var k=0;k<R.length;k++){ix[R[k][0]]=k;if(R[k][1]>=BAD)best=k}
+  $("d").min=R[0][0];$("d").max=R[R.length-1][0];show(best)}
+ else $("out").innerHTML='<div class="card">The replay data is not in the notebook yet.</div>';
+ if(lm)unpack(lm).then(function(s){M=JSON.parse(s);$("run").disabled=false;forecast()}).catch(function(){$("live").innerHTML='<div class="card">This browser could not unpack the model. Try a current version of Chrome, Edge, Firefox or Safari.</div>'});
+ else $("live").innerHTML='<div class="card">The live model is not in the notebook yet.</div>';
+}).catch(function(){$("out").innerHTML=$("live").innerHTML='<div class="card">The notebook could not be loaded.</div>'});
 </script>
 </body>
 </html>
