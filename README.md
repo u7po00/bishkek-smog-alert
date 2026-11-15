@@ -1,4 +1,4 @@
-# Bishkek Smog Alert
+# BishkekPM
 
 **Veritas AI Hackathon 2026 · Climate track · started from the suggested project "Next-day air quality forecast"**
 
