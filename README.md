@@ -8,7 +8,7 @@ A next-day PM2.5 forecast for Bishkek built on measured data, turned into a bad-
 
 Code: [`bishkek_air_alert.ipynb`](bishkek_air_alert.ipynb). Click the badge to open it in Google Colab, then choose Runtime → Run all. It downloads its own data, needs no GPU and finishes in a few minutes.
 
-Demo: [replay demo page](https://u7po00.github.io/bishkek-smog-alert/). Pick any past evening and see the warning the model would have sent and what the air turned out to be the next day.
+Demo: [live forecast and replay page](https://u7po00.github.io/bishkek-smog-alert/). Type in today's PM2.5 reading to get a forecast for the next seven days, or pick any past evening to see the warning the model would have sent and what the air turned out to be.
 
 > This is a student prototype. It is not health advice.
 
@@ -26,7 +26,7 @@ The suggested project is a next-day air quality forecast. On top of that this pr
 4. **An honest range.** Every forecast comes with an 80% range, and the notebook checks how often the real value fell inside it.
 5. **Forecasts up to a week ahead**, to show how accuracy changes with the horizon.
 6. **Warnings in Kyrgyz, Russian and English.**
-7. **A replay demo page** that shows, for any evening in the test period, the warning the model would have sent in three languages and what actually happened.
+7. **A demo page that runs the trained model in the browser.** It gives a live week-ahead forecast from a typed-in reading and the current weather forecast, so the dates move forward every day, and it replays every tested day with the warning in three languages.
 8. **A real forecast for tomorrow.** Section 12 of the notebook takes today's PM2.5 reading, typed in by hand because the Embassy feed ended in March 2025, downloads the live weather forecast and prints tomorrow's predicted level, its range and the warning. It also prints an outlook for the next seven days. With a single reading these are less accurate than the tested results, and a month ahead cannot be forecast day by day because the weather cannot.
 
 ## Data
