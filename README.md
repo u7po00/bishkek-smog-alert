@@ -14,7 +14,7 @@ Demo: [live forecast and replay page](https://u7po00.github.io/bishkek-smog-aler
 
 ## Why this project
 
-<!-- ILIM: 3-5 sentences in your own words. Why Bishkek, what the smog is like in winter, who a warning would help. -->
+Each winter it gets harder to simply breathe, as air pollution keeps getting worse, and international rankings place my city among the most polluted in the world. Last winter, our region had an energy crisis: the old infrastructure could not keep up with growing demand. Traffic jams are everywhere, and global warming is melting the Tien-Shan glaciers. That is life in Bishkek today. As a citizen and a patriot of my country, it hurts my soul to see all of these issues. I cannot address all these issues at once, but solving at least one of them would be better than nothing. I chose smog, as this issue is well known to every person who lives in Bishkek.
 
 ## What I added to the suggested project
 
@@ -87,10 +87,4 @@ Figures are in the notebook.
 - [scikit-learn](https://scikit-learn.org/), [pandas](https://pandas.pydata.org/), [NumPy](https://numpy.org/), [Matplotlib](https://matplotlib.org/), [Requests](https://requests.readthedocs.io/)
 
 **AI tools**
-- [Claude](https://claude.ai/) (Anthropic) was used to plan the project, write the notebook code and draft the structure of this README. I chose the project and its additions, ran the experiments, and wrote the "Why this project" and results discussion myself.
-
-<!-- ILIM: the AI-tools line must stay true. If you change who did what, change the sentence. Add the starter notebook from the kit here if you used anything from it. -->
-
-## Author
-
-<!-- ILIM: full name, school -->
+- [Claude](https://claude.ai/) (Anthropic) was used to plan the project, write the notebook and demo-page code, run the notebook and draft this README. I chose the project and its additions, directed the work and wrote the "Why this project" section myself.
