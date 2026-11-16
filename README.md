@@ -87,4 +87,4 @@ Figures are in the notebook.
 - [scikit-learn](https://scikit-learn.org/), [pandas](https://pandas.pydata.org/), [NumPy](https://numpy.org/), [Matplotlib](https://matplotlib.org/), [Requests](https://requests.readthedocs.io/)
 
 **AI tools**
-- [Claude](https://claude.ai/) (Anthropic) was used to plan the project, write the notebook and demo-page code, run the notebook and draft this README. I chose the project and its additions, directed the work and wrote the "Why this project" section myself.
+- [Claude](https://claude.ai/) (Anthropic): this project was built with Claude's assistance.
